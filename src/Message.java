@@ -1,14 +1,14 @@
 public class Message<T> {
 
     private int ttl;
-    private ProcessNode source;
-    private ProcessNode target;
-    private ProcessNode sender;
-    private ProcessNode receiver;
+    private int source;
+    private int target;
+    private int sender;
+    private int receiver;
     private String contentID;
     private T data;
 
-    public Message(ProcessNode source, ProcessNode target, ProcessNode sender, ProcessNode receiver, String contentID, T data) {
+    public Message(int source, int target, int sender, int receiver, String contentID, T data) {
         this.ttl = 24;
         this.source = source;
         this.target = target;
@@ -26,35 +26,35 @@ public class Message<T> {
         this.ttl = ttl;
     }
 
-    public ProcessNode getSource() {
+    public int getSource() {
         return source;
     }
 
-    public void setSource(ProcessNode source) {
+    public void setSource(int source) {
         this.source = source;
     }
 
-    public ProcessNode getTarget() {
+    public int getTarget() {
         return target;
     }
 
-    public void setTarget(ProcessNode target) {
+    public void setTarget(int target) {
         this.target = target;
     }
 
-    public ProcessNode getSender() {
+    public int getSender() {
         return sender;
     }
 
-    public void setSender(ProcessNode sender) {
+    public void setSender(int sender) {
         this.sender = sender;
     }
 
-    public ProcessNode getReceiver() {
+    public int getReceiver() {
         return receiver;
     }
 
-    public void setReceiver(ProcessNode receiver) {
+    public void setReceiver(int receiver) {
         this.receiver = receiver;
     }
 
