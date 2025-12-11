@@ -9,10 +9,10 @@ public class ProcessNode<T> {
     private int[] routing;
     private String contentID;
     private T data;
-    private SystemGraph system;
-    List<WaitingMessage> processingQueue;
+    private SystemGraph<T> system;
+    List<WaitingMessage<T>> processingQueue;
 
-    public ProcessNode(int id, int[] neighbours, int[] weights, String contentID, T data, SystemGraph system) {
+    public ProcessNode(int id, int[] neighbours, int[] weights, String contentID, T data, SystemGraph<T> system) {
         this.id = id;
         this.neighbours = neighbours;
         this.weights = weights;
@@ -23,10 +23,22 @@ public class ProcessNode<T> {
         this.processingQueue = new ArrayList<>();
     }
 
+    public void receive(Message<T> message) {
+        int processingTime = 5;
+
+        // Falls message eine Response ist
+        if (message.getTarget() >= 0) {
+            processingTime += 5;
+        }
+
+        // +1 zu processingTime da in SystemGraph.step() zur selben millisekunde, in der eine Nachricht erhalten wird, bereits ein step() ausgeführt wird
+        processingQueue.add(new WaitingMessage<>(message, processingTime+1));
+    }
+
     // Hier wir die Bearbeitungszeit der Nachrichten simuliert
     // Es wird angenommen, das Nachrichten parallel bearbeitet werden, nicht sequentiell
     public void step() {
-        for (WaitingMessage waitingMessage : processingQueue) {
+        for (WaitingMessage<T> waitingMessage : processingQueue) {
             waitingMessage.setWaitTime(waitingMessage.getWaitTime()-1);
             if (waitingMessage.getWaitTime() <= 0) {
                 process(waitingMessage.getMessage());
@@ -35,7 +47,7 @@ public class ProcessNode<T> {
         }
     }
 
-    private <U> void process(Message<U> message) {
+    private void process(Message<T> message) {
         message.setTtl(message.getTtl()-1);
 
         // Falls Nachricht eine Response bzw. hat ein Target
@@ -72,25 +84,15 @@ public class ProcessNode<T> {
         }
     }
 
-    public <U> void send(Message<U> message) {
+    public void send(Message<T> message) {
         getSystem().send(message, getWeights()[message.getReceiver()]);
     }
 
-    public <U> void receive(Message<U> message) {
-        int processingTime = 5;
 
-        // Falls message eine Response ist
-        if (message.getTarget() >= 0) {
-            processingTime += 5;
-        }
-
-        // +1 zu processingTime da in SystemGraph.step() zur selben millisekunde, in der eine Nachricht erhalten wird, bereits ein step() ausgeführt wird
-        processingQueue.add(new WaitingMessage(message, processingTime+1));
-    }
 
     public void request(String contentID) {
         for (int i = 0; i < getNeighbours().length; i++) {
-            send(new Message<T>(
+            send(new Message<>(
                             getId(),
                             -1,
                             getId(),
@@ -150,11 +152,11 @@ public class ProcessNode<T> {
         this.data = data;
     }
 
-    public SystemGraph getSystem() {
+    public SystemGraph<T> getSystem() {
         return system;
     }
 
-    public void setSystem(SystemGraph system) {
+    public void setSystem(SystemGraph<T> system) {
         this.system = system;
     }
 }

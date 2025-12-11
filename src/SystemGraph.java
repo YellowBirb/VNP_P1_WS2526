@@ -2,11 +2,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class SystemGraph {
+public class SystemGraph<T> {
 
     private int time;
-    private List<ProcessNode> nodes;
-    private List<WaitingMessage> communicationLatencyQueue;
+    private List<ProcessNode<T>> nodes;
+    private List<WaitingMessage<T>> communicationLatencyQueue;
     private int[] startRequestTimes;
 
     public SystemGraph() {
@@ -28,7 +28,7 @@ public class SystemGraph {
     }
 
     public void step() {
-        for (WaitingMessage msg : communicationLatencyQueue) {
+        for (WaitingMessage<T> msg : communicationLatencyQueue) {
             msg.setWaitTime(msg.getWaitTime()-1);
             if (msg.getWaitTime() <= 0) {
                 nodes.get(msg.getMessage().getReceiver()).receive(msg.getMessage());
@@ -36,15 +36,17 @@ public class SystemGraph {
             }
         }
 
-        for (ProcessNode p : nodes) {
+        for (ProcessNode<T> p : nodes) {
             p.step();
         }
     }
 
-    public <T> void send(Message<T> message, int latency) {
+    public void send(Message<T> message, int latency) {
         int receiver = message.getReceiver();
-        communicationLatencyQueue.add(new WaitingMessage(message, latency));
+        communicationLatencyQueue.add(new WaitingMessage<>(message, latency));
     }
+
+
 
     public int getTime() {
         return time;
@@ -54,19 +56,19 @@ public class SystemGraph {
         this.time = time;
     }
 
-    public List<ProcessNode> getNodes() {
+    public List<ProcessNode<T>> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<ProcessNode> nodes) {
+    public void setNodes(List<ProcessNode<T>> nodes) {
         this.nodes = nodes;
     }
 
-    public List<WaitingMessage> getCommunicationLatencyQueue() {
+    public List<WaitingMessage<T>> getCommunicationLatencyQueue() {
         return communicationLatencyQueue;
     }
 
-    public void setCommunicationLatencyQueue(List<WaitingMessage> communicationLatencyQueue) {
+    public void setCommunicationLatencyQueue(List<WaitingMessage<T>> communicationLatencyQueue) {
         this.communicationLatencyQueue = communicationLatencyQueue;
     }
 

@@ -2,7 +2,7 @@ public class DiscreteEventSimulator {
 
     public static void main(String[] args) {
 
-        SystemGraph system = new SystemGraph();
+        SystemGraph<String> system = new SystemGraph<>();
 
         system.init("");
 
