@@ -29,8 +29,8 @@ public class ProcessNode<T> {
         // System.out.println("["+getSystem().getTime()+"] process " + getId() + " has received a message");
         int processingTime = 5;
 
-        // Falls message eine Response ist
-        if (message.getTarget() >= 0) {
+        // Falls eine Response erstellt werden muss
+        if (message.getTarget() == getId()) {
             processingTime += 5;
         }
 
@@ -43,6 +43,7 @@ public class ProcessNode<T> {
     public void step() {
         List<WaitingMessage<T>> remove = new ArrayList<>();
         for (WaitingMessage<T> waitingMessage : getProcessingQueue()) {
+
             waitingMessage.setWaitTime(waitingMessage.getWaitTime()-1);
             if (waitingMessage.getWaitTime() <= 0) {
                 process(waitingMessage.getMessage());
@@ -61,26 +62,19 @@ public class ProcessNode<T> {
         // TTL reduzieren
         message.setTtl(message.getTtl()-1);
 
-        // Falls noch keine Nachricht von dieser Source: routing speichern
-        // Falls bereits gespeichert: nur weitermachen wenn routing übereinstimmt
-        if (!checkRouting(message.getSource(), message.getSender())) {
-            // System.out.println("["+getSystem().getTime()+"] Process "+getId()+" not sending response, routing escape");
-            return;
-        }
-
         // Message ist eine Response
         if (message.getTarget() >= 0) {
-
             // System.out.println("["+getSystem().getTime()+"] Process " + getId() + " has determined Message to be a response");
 
             // Falls Response auf eigene Request
             if (message.getTarget() == getId()) {
-                System.out.println("["+getSystem().getTime()+"] Process "+getId()+" Received Response from Process "+message.getSource()+" for Content-Identifier " + message.getContentID() + " with contents " + message.getData() + " at time " + getSystem().getTime() + "ms");
+                System.out.println("["+getSystem().getTime()+"] Process "+getId()+" Received Response originating from Process "+message.getSource()+" via Process "+message.getSender()+" for Content-Identifier " + message.getContentID() + " with contents " + message.getData() + " at time " + getSystem().getTime() + "ms");
             }
             // Response weiterleiten
             else {
                 // nur weiterleiten, wenn
                 if (message.getTtl() > 0) {
+                    // System.out.println("["+getSystem().getTime()+"] Process " + getId() + " is relaying a response received from Process "+ message.getSender() );
                     message.setSender(getId());
                     message.setReceiver(getRouting()[message.getTarget()]);
                     send(message);
@@ -91,7 +85,14 @@ public class ProcessNode<T> {
         // Message ist eine Request
         else {
 
-            //System.out.println("["+getSystem().getTime()+"] Process " + getId() + " has determined Message to be a request");
+            // Falls noch keine Nachricht von dieser Source: routing speichern
+            // Falls bereits gespeichert: nur weitermachen wenn routing übereinstimmt
+            if (!checkRouting(message.getSource(), message.getSender())) {
+                // System.out.println("["+getSystem().getTime()+"] Process "+getId()+" not relaying request received from Process "+ message.getSender() +", routing escape");
+                return;
+            }
+
+            // System.out.println("["+getSystem().getTime()+"] Process " + getId() + " has determined Message to be a request");
 
             // Falls in der Request gesuchte Daten im Prozess vorhanden sind
             if (message.getContentID().equals(getContentID())) {
@@ -115,14 +116,19 @@ public class ProcessNode<T> {
                 // nur weiterleiten, wenn
                 if (message.getTtl() > 0) {
 
-                    // System.out.println("["+getSystem().getTime()+"] Process " + getId() + " is relaying a request");
+                    // System.out.println("["+getSystem().getTime()+"] Process " + getId() + " is relaying a request received from Process "+ message.getSender());
 
                     // an jeden Nachbar weiterleiten
-                    message.setSender(getId());
                     for (int i = 0; i < getNeighbours().length; i++) {
-                        if (message.getSource() != getNeighbours()[i]) {
-                            message.setReceiver(getNeighbours()[i]);
-                            send(message);
+                        if (message.getSender() != getNeighbours()[i]) {
+                            send(new Message<>(
+                                    message.getSource(),
+                                    message.getTarget(),
+                                    getId(),
+                                    getNeighbours()[i],
+                                    message.getContentID(),
+                                    message.getData()
+                            ));
                         }
                     }
                 }
@@ -151,7 +157,7 @@ public class ProcessNode<T> {
         System.out.println("["+getSystem().getTime()+"] Process "+getId()+" sends request for contentID " + contentID);
 
         if (contentID.equals(getContentID())) {
-            System.out.println("["+getSystem().getTime()+"] Process "+getId()+" Received Response from Process "+getId()+" for Content-Identifier " + contentID + " with contents " + getData() + " at time " + getSystem().getTime() + "ms");
+            System.out.println("["+getSystem().getTime()+"] Process "+getId()+" Received Response originating from Process "+getId()+" for Content-Identifier " + contentID + " with contents " + getData() + " at time " + getSystem().getTime() + "ms");
         }
         else {
             for (int i = 0; i < getNeighbours().length; i++) {

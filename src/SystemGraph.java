@@ -82,13 +82,6 @@ public class SystemGraph {
 
     public void step() {
 
-        // Zufällige Requests ausführen
-        for (int i = 0; i < getStartRequestTimes().length; i++) {
-            if (getTime() == getStartRequestTimes()[i]) {
-                getNodes().get(i).request(getContentIDs().get(new Random().nextInt(getContentIDs().size())));
-            }
-        }
-
         // Kommunikationslatenz abwarten/simulieren
         List<WaitingMessage<String>> remove = new ArrayList<>();
         for (WaitingMessage<String> msg : getCommunicationLatencyQueue()) {
@@ -101,6 +94,13 @@ public class SystemGraph {
 
         for (WaitingMessage<String> waitingMessage : remove) {
             getCommunicationLatencyQueue().remove(waitingMessage);
+        }
+
+        // Zufällige Requests ausführen
+        for (int i = 0; i < getStartRequestTimes().length; i++) {
+            if (getTime() == getStartRequestTimes()[i]) {
+                getNodes().get(i).request(getContentIDs().get(new Random().nextInt(getContentIDs().size())));
+            }
         }
 
         // Bearbeitungszeit simulieren
