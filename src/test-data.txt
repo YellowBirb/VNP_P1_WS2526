@@ -1,0 +1,9 @@
+pi:3.14;
+answer:42;
+year:2025;
+month:12;
+size:9;
+max_ttl:24;
+time:2;
+randome:3;
+ten:10;

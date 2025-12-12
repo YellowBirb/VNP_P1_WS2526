@@ -18,6 +18,11 @@ public class Message<T> {
         this.data = data;
     }
 
+    public String toString() {
+        String dataString = data == null ? "null" : data.toString();
+        return "\n[\n\"ttl\": "+ttl+", \n\"source\": "+source+", \n\"target\": "+target+", \n\"sender\": "+sender+", \n\"receiver\": "+receiver+", \n\"contentID\": "+contentID+", \n\"data\": "+dataString+"\n]";
+    }
+
     public int getTtl() {
         return ttl;
     }

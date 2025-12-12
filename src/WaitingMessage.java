@@ -9,6 +9,11 @@ public class WaitingMessage<T> {
         this.waitTime = waitTime;
     }
 
+    public String toString()
+    {
+        return "\n[\n\"message\": "+message+", \n\"waitTime\": "+waitTime+"\n]";
+    }
+
     public Message<T> getMessage() {
         return message;
     }
